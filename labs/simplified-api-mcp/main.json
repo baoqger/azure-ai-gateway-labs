@@ -1,0 +1,1306 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.43.8.12551",
+      "templateHash": "16693186114348314399"
+    }
+  },
+  "parameters": {
+    "apimSku": {
+      "type": "string"
+    },
+    "apimSubscriptionsConfig": {
+      "type": "array",
+      "defaultValue": []
+    },
+    "apicLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "apicServiceNamePrefix": {
+      "type": "string",
+      "defaultValue": "apic"
+    }
+  },
+  "variables": {
+    "resourceSuffix": "[uniqueString(subscription().id, resourceGroup().id)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "lawModule",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "401286992216088179"
+            }
+          },
+          "parameters": {
+            "resourceSuffix": {
+              "type": "string",
+              "defaultValue": "[uniqueString(subscription().id, resourceGroup().id)]",
+              "metadata": {
+                "description": "The suffix to append to the Log Analytics name. Defaults to a unique string based on subscription and resource group IDs."
+              }
+            },
+            "logAnalyticsName": {
+              "type": "string",
+              "defaultValue": "[format('workspace-{0}', parameters('resourceSuffix'))]",
+              "metadata": {
+                "description": "Name of the Log Analytics resource. Defaults to \"workspace-<resourceSuffix>\"."
+              }
+            },
+            "logAnalyticsLocation": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location of the Log Analytics resource"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[parameters('logAnalyticsName')]",
+              "location": "[parameters('logAnalyticsLocation')]",
+              "properties": {
+                "retentionInDays": 30,
+                "features": {
+                  "searchVersion": 1
+                },
+                "sku": {
+                  "name": "PerGB2018"
+                }
+              },
+              "identity": {
+                "type": "SystemAssigned"
+              }
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('logAnalyticsName')]"
+            },
+            "customerId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName')), '2023-09-01').customerId]"
+            },
+            "primarySharedKey": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName')), '2023-09-01').primarySharedKey]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "appInsightsModule",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "lawId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'lawModule'), '2025-04-01').outputs.id.value]"
+          },
+          "customMetricsOptedInType": {
+            "value": "WithDimensions"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "6997176465126670307"
+            }
+          },
+          "parameters": {
+            "resourceSuffix": {
+              "type": "string",
+              "defaultValue": "[uniqueString(subscription().id, resourceGroup().id)]",
+              "metadata": {
+                "description": "The suffix to append to the Application Insights name. Defaults to a unique string based on subscription and resource group IDs."
+              }
+            },
+            "applicationInsightsName": {
+              "type": "string",
+              "defaultValue": "[format('insights-{0}', parameters('resourceSuffix'))]",
+              "metadata": {
+                "description": "Name of the Application Insights resource. Defaults to \"insights-<resourceSuffix>\"."
+              }
+            },
+            "applicationInsightsLocation": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location of the Application Insights resource"
+              }
+            },
+            "customMetricsOptedInType": {
+              "type": "string",
+              "defaultValue": "Off",
+              "allowedValues": [
+                "WithDimensions",
+                "NoDimensions",
+                "NoMeasurements",
+                "Off"
+              ],
+              "metadata": {
+                "description": "The custom metrics opted in type. Default is Off"
+              }
+            },
+            "useWorkbook": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Indicate whether workbook is used. Default is false"
+              }
+            },
+            "workbookName": {
+              "type": "string",
+              "defaultValue": "UsageAnalysis",
+              "metadata": {
+                "description": "Name for the Workbook. Defaults to \"UsageAnalysis\"."
+              }
+            },
+            "workbookLocation": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for the Workbook"
+              }
+            },
+            "workbookDisplayName": {
+              "type": "string",
+              "defaultValue": "Usage Analysis",
+              "metadata": {
+                "description": "Display Name for the Workbook. Defaults to \"Usage Analysis\"."
+              }
+            },
+            "workbookJson": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "JSON string for the Workbook"
+              }
+            },
+            "lawId": {
+              "type": "string",
+              "metadata": {
+                "description": "Log Analytics Workspace Id"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[parameters('applicationInsightsName')]",
+              "location": "[parameters('applicationInsightsLocation')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[parameters('lawId')]",
+                "CustomMetricsOptedInType": "[parameters('customMetricsOptedInType')]"
+              }
+            },
+            {
+              "condition": "[parameters('useWorkbook')]",
+              "type": "Microsoft.Insights/workbooks",
+              "apiVersion": "2022-04-01",
+              "name": "[guid(resourceGroup().id, parameters('workbookName'))]",
+              "location": "[parameters('workbookLocation')]",
+              "kind": "shared",
+              "properties": {
+                "displayName": "[parameters('workbookDisplayName')]",
+                "serializedData": "[parameters('workbookJson')]",
+                "sourceId": "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]",
+                "category": "UsageAnalysis"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('applicationInsightsName')]"
+            },
+            "instrumentationKey": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
+            },
+            "appId": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2020-02-02').AppId]"
+            },
+            "applicationInsightsName": {
+              "type": "string",
+              "value": "[parameters('applicationInsightsName')]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'lawModule')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "apimModule",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "apimSku": {
+            "value": "[parameters('apimSku')]"
+          },
+          "apimSubscriptionsConfig": {
+            "value": "[parameters('apimSubscriptionsConfig')]"
+          },
+          "lawId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'lawModule'), '2025-04-01').outputs.id.value]"
+          },
+          "appInsightsId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'appInsightsModule'), '2025-04-01').outputs.id.value]"
+          },
+          "appInsightsInstrumentationKey": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'appInsightsModule'), '2025-04-01').outputs.instrumentationKey.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "15176668421818585861"
+            }
+          },
+          "parameters": {
+            "resourceSuffix": {
+              "type": "string",
+              "defaultValue": "[uniqueString(subscription().id, resourceGroup().id)]",
+              "metadata": {
+                "description": "The suffix to append to the API Management instance name. Defaults to a unique string based on subscription and resource group IDs."
+              }
+            },
+            "apiManagementName": {
+              "type": "string",
+              "defaultValue": "[format('apim-{0}', parameters('resourceSuffix'))]",
+              "metadata": {
+                "description": "The name of the API Management instance. Defaults to \"apim-<resourceSuffix>\"."
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "The location of the API Management instance. Defaults to the resource group location."
+              }
+            },
+            "publisherEmail": {
+              "type": "string",
+              "defaultValue": "noreply@microsoft.com",
+              "metadata": {
+                "description": "The email address of the publisher. Defaults to \"noreply@microsoft.com\"."
+              }
+            },
+            "publisherName": {
+              "type": "string",
+              "defaultValue": "Microsoft",
+              "metadata": {
+                "description": "The name of the publisher. Defaults to \"Microsoft\"."
+              }
+            },
+            "apimSku": {
+              "type": "string",
+              "defaultValue": "Basicv2",
+              "allowedValues": [
+                "Consumption",
+                "Developer",
+                "Basic",
+                "Basicv2",
+                "Standard",
+                "Standardv2",
+                "Premium"
+              ],
+              "metadata": {
+                "description": "The pricing tier of this API Management service"
+              }
+            },
+            "apimManagedIdentityType": {
+              "type": "string",
+              "defaultValue": "SystemAssigned",
+              "allowedValues": [
+                "SystemAssigned",
+                "UserAssigned",
+                "SystemAssigned, UserAssigned"
+              ],
+              "metadata": {
+                "description": "The type of managed identity to by used with API Management"
+              }
+            },
+            "apimUserAssignedManagedIdentityId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The user-assigned managed identity ID to be used with API Management"
+              }
+            },
+            "apimSubscriptionsConfig": {
+              "type": "array",
+              "defaultValue": [],
+              "metadata": {
+                "description": "Configuration array for APIM subscriptions"
+              }
+            },
+            "lawId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The Log Analytics Workspace ID for diagnostic settings"
+              }
+            },
+            "appInsightsInstrumentationKey": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The instrumentation key for Application Insights"
+              }
+            },
+            "appInsightsId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The resource ID for Application Insights"
+              }
+            },
+            "releaseChannel": {
+              "type": "string",
+              "defaultValue": "Default",
+              "allowedValues": [
+                "Early",
+                "Default",
+                "Late",
+                "GenAI"
+              ],
+              "metadata": {
+                "description": "The release channel for the API Management service"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ApiManagement/service",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[parameters('apiManagementName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('apimSku')]",
+                "capacity": 1
+              },
+              "properties": {
+                "publisherEmail": "[parameters('publisherEmail')]",
+                "publisherName": "[parameters('publisherName')]",
+                "releaseChannel": "[parameters('releaseChannel')]"
+              },
+              "identity": {
+                "type": "[parameters('apimManagedIdentityType')]",
+                "userAssignedIdentities": "[if(and(equals(parameters('apimManagedIdentityType'), 'UserAssigned'), not(equals(parameters('apimUserAssignedManagedIdentityId'), ''))), createObject(format('{0}', parameters('apimUserAssignedManagedIdentityId')), createObject()), null())]"
+              }
+            },
+            {
+              "condition": "[greater(length(parameters('lawId')), 0)]",
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName'))]",
+              "name": "apimDiagnosticSettings",
+              "properties": {
+                "workspaceId": "[parameters('lawId')]",
+                "logAnalyticsDestinationType": "Dedicated",
+                "logs": [
+                  {
+                    "categoryGroup": "AllLogs",
+                    "enabled": true
+                  }
+                ],
+                "metrics": [
+                  {
+                    "category": "AllMetrics",
+                    "enabled": true
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName'))]"
+              ]
+            },
+            {
+              "condition": "[greater(length(parameters('lawId')), 0)]",
+              "type": "Microsoft.ApiManagement/service/loggers",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}', parameters('apiManagementName'), 'azuremonitor')]",
+              "properties": {
+                "loggerType": "azureMonitor",
+                "isBuffered": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName'))]"
+              ]
+            },
+            {
+              "condition": "[and(not(empty(parameters('appInsightsId'))), not(empty(parameters('appInsightsInstrumentationKey'))))]",
+              "type": "Microsoft.ApiManagement/service/loggers",
+              "apiVersion": "2021-12-01-preview",
+              "name": "[format('{0}/{1}', parameters('apiManagementName'), 'appinsights-logger')]",
+              "properties": {
+                "credentials": {
+                  "instrumentationKey": "[parameters('appInsightsInstrumentationKey')]"
+                },
+                "description": "APIM Logger for Application Insights",
+                "isBuffered": false,
+                "loggerType": "applicationInsights",
+                "resourceId": "[parameters('appInsightsId')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName'))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "apimSubscription",
+                "count": "[length(parameters('apimSubscriptionsConfig'))]",
+                "mode": "serial",
+                "batchSize": 1
+              },
+              "condition": "[greater(length(parameters('apimSubscriptionsConfig')), 0)]",
+              "type": "Microsoft.ApiManagement/service/subscriptions",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}', parameters('apiManagementName'), parameters('apimSubscriptionsConfig')[copyIndex()].name)]",
+              "properties": {
+                "allowTracing": true,
+                "displayName": "[format('{0}', parameters('apimSubscriptionsConfig')[copyIndex()].displayName)]",
+                "scope": "/apis",
+                "state": "active"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('apiManagementName')]"
+            },
+            "principalId": {
+              "type": "string",
+              "value": "[if(equals(parameters('apimManagedIdentityType'), 'SystemAssigned'), reference(resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName')), '2024-06-01-preview', 'full').identity.principalId, '')]"
+            },
+            "gatewayUrl": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.ApiManagement/service', parameters('apiManagementName')), '2024-06-01-preview').gatewayUrl]"
+            },
+            "loggerId": {
+              "type": "string",
+              "value": "[if(greater(length(parameters('lawId')), 0), resourceId('Microsoft.ApiManagement/service/loggers', parameters('apiManagementName'), 'azuremonitor'), '')]"
+            },
+            "apimSubscriptions": {
+              "type": "array",
+              "copy": {
+                "count": "[length(parameters('apimSubscriptionsConfig'))]",
+                "input": {
+                  "name": "[parameters('apimSubscriptionsConfig')[copyIndex()].name]",
+                  "displayName": "[parameters('apimSubscriptionsConfig')[copyIndex()].displayName]",
+                  "key": "[listSecrets(resourceId('Microsoft.ApiManagement/service/subscriptions', parameters('apiManagementName'), parameters('apimSubscriptionsConfig')[copyIndex()].name), '2024-06-01-preview').primaryKey]"
+                }
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'appInsightsModule')]",
+        "[resourceId('Microsoft.Resources/deployments', 'lawModule')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "apicModule",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "apicServiceName": {
+            "value": "[format('{0}-{1}', parameters('apicServiceNamePrefix'), variables('resourceSuffix'))]"
+          },
+          "location": {
+            "value": "[parameters('apicLocation')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "13918988202931139917"
+            }
+          },
+          "parameters": {
+            "apicsku": {
+              "type": "string",
+              "defaultValue": "Free"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "apicServiceName": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "$fxv#0": "{\r\n    \"mcps\": [\r\n        {\r\n            \"mcpName\": \"atlassian\",\r\n            \"description\": \"Track issues, manage sprints, create docs, and search knowledge bases\",\r\n            \"InstallVSCodeURL\": \"https://mcp.atlassian.com/v1/sse\",\r\n            \"DodumentationURL\": \"https://www.atlassian.com/platform/remote-mcp-server\"\r\n        },\r\n        {\r\n            \"mcpName\": \"cloudflare\",\r\n            \"description\": \"Get up to date reference information on Cloudflare\",\r\n            \"InstallVSCodeURL\": \"https://docs.mcp.cloudflare.com/sse\",\r\n            \"DodumentationURL\": \"https://github.com/cloudflare/mcp-server-cloudflare\"\r\n        },\r\n        {\r\n            \"mcpName\": \"sentry\",\r\n            \"description\": \"Search, query, and debug errors intelligently\",\r\n            \"InstallVSCodeURL\": \"https://mcp.sentry.dev/sse\",\r\n            \"DodumentationURL\": \"https://docs.sentry.io/product/sentry-mcp/\"\r\n        },\r\n        {\r\n            \"mcpName\": \"paypal\",\r\n            \"description\": \"Create and manage invoices, and analyze sales activity\",\r\n            \"InstallVSCodeURL\": \"https://mcp.paypal.com/sse\",\r\n            \"DodumentationURL\": \"https://developer.paypal.com/tools/mcp-server/\"\r\n        },\r\n        {\r\n            \"mcpName\": \"linear\",\r\n            \"description\": \"Search for and create issues, projects, and comments\",\r\n            \"InstallVSCodeURL\": \"https://mcp.linear.app/sse\",\r\n            \"DodumentationURL\": \"https://linear.app/changelog/2025-05-01-mcp\"\r\n        },\r\n        {\r\n            \"mcpName\": \"plaid\",\r\n            \"description\": \"Analyze metrics, usage, and support tickets\",\r\n            \"InstallVSCodeURL\": \"https://api.dashboard.plaid.com/mcp/sse\",\r\n            \"DodumentationURL\": \"https://plaid.com/blog/plaid-mcp-ai-assistant-claude/\"\r\n        },\r\n        {\r\n            \"mcpName\": \"asana\",\r\n            \"description\": \"Create, search, and assign tasks and deliverables\",\r\n            \"InstallVSCodeURL\": \"https://mcp.asana.com/sse\",\r\n            \"DodumentationURL\": \"https://developers.asana.com/docs/using-asanas-model-control-protocol-mcp-server\"\r\n        },\r\n        {\r\n            \"mcpName\": \"square\",\r\n            \"description\": \"Search and manage transaction, merchant, and payment data\",\r\n            \"InstallVSCodeURL\": \"https://mcp.squareup.com/sse\",\r\n            \"DodumentationURL\": \"https://github.com/square/square-mcp-server\"\r\n        },\r\n        {\r\n            \"mcpName\": \"intercom\",\r\n            \"description\": \"Analyze support trends and triage customer issues\",\r\n            \"InstallVSCodeURL\": \"https://mcp.intercom.com/sse\",\r\n            \"DodumentationURL\": \"https://www.intercom.com/blog/introducing-model-context-protocol-fin/\"\r\n        }\r\n    ]\r\n}\r\n",
+            "mcpConfigs": "[json(variables('$fxv#0')).mcps]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ApiCenter/services",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[parameters('apicServiceName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('apicsku')]"
+              }
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}', parameters('apicServiceName'), 'default')]",
+              "properties": {
+                "title": "Default workspace",
+                "description": "Default workspace"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services', parameters('apicServiceName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/environments",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('apicServiceName'), 'default', 'api')]",
+              "properties": {
+                "title": "api",
+                "description": "API default environment",
+                "kind": "rest",
+                "server": {
+                  "managementPortalUri": [
+                    "https://portal.azure.com/"
+                  ],
+                  "type": "other"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces', parameters('apicServiceName'), 'default')]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/environments",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('apicServiceName'), 'default', 'mcp')]",
+              "properties": {
+                "title": "mcp",
+                "description": "mcp default environment",
+                "kind": "mcp",
+                "server": {
+                  "managementPortalUri": [
+                    "https://portal.azure.com/"
+                  ],
+                  "type": "other"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces', parameters('apicServiceName'), 'default')]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "apiCenterAPI",
+                "count": "[length(variables('mcpConfigs'))]"
+              },
+              "type": "Microsoft.ApiCenter/services/workspaces/apis",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName)]",
+              "properties": {
+                "title": "[format('{0}{1}', toUpper(substring(variables('mcpConfigs')[copyIndex()].mcpName, 0, 1)), substring(variables('mcpConfigs')[copyIndex()].mcpName, 1))]",
+                "kind": "mcp",
+                "lifecycleState": "production",
+                "externalDocumentation": [
+                  {
+                    "description": "Install VS Code",
+                    "title": "Install VS Code",
+                    "url": "[format('https://insiders.vscode.dev/redirect/mcp/install?name={0}&config={{\"type\":\"sse\",\"url\":\"{1}\"}}', variables('mcpConfigs')[copyIndex()].mcpName, variables('mcpConfigs')[copyIndex()].InstallVSCodeURL)]"
+                  },
+                  {
+                    "description": "[format('{0} MCP documentation', variables('mcpConfigs')[copyIndex()].mcpName)]",
+                    "title": "[format('{0} MCP documentation', variables('mcpConfigs')[copyIndex()].mcpName)]",
+                    "url": "[variables('mcpConfigs')[copyIndex()].DodumentationURL]"
+                  }
+                ],
+                "contacts": [],
+                "customProperties": {},
+                "summary": "[variables('mcpConfigs')[copyIndex()].description]",
+                "description": "[variables('mcpConfigs')[copyIndex()].description]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces', parameters('apicServiceName'), 'default')]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "apiVersion",
+                "count": "[length(variables('mcpConfigs'))]"
+              },
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/versions",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName, '1-0-0')]",
+              "properties": {
+                "title": "1-0-0",
+                "lifecycleStage": "production"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName)]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "apiDefinition",
+                "count": "[length(variables('mcpConfigs'))]"
+              },
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/versions/definitions",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}/{4}', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName, '1-0-0', 'default')]",
+              "properties": {
+                "description": "default",
+                "title": "default"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName, '1-0-0')]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "apiDeployment",
+                "count": "[length(variables('mcpConfigs'))]"
+              },
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/deployments",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName, 'mcpdeployment')]",
+              "properties": {
+                "description": "mcpdeployment",
+                "title": "mcpdeployment",
+                "environmentId": "[format('/workspaces/default/environments/{0}', 'api')]",
+                "definitionId": "[format('/workspaces/default/apis/{0}/versions/{1}/definitions/{2}', variables('mcpConfigs')[copyIndex()].mcpName, '1-0-0', 'default')]",
+                "state": "active",
+                "server": {
+                  "runtimeUri": [
+                    "[variables('mcpConfigs')[copyIndex()].InstallVSCodeURL]"
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName)]",
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions/definitions', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName, '1-0-0', 'default')]",
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/environments', parameters('apicServiceName'), 'default', 'api')]",
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions', parameters('apicServiceName'), 'default', variables('mcpConfigs')[copyIndex()].mcpName, '1-0-0')]"
+              ]
+            }
+          ],
+          "outputs": {
+            "id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.ApiCenter/services', parameters('apicServiceName'))]"
+            },
+            "name": {
+              "type": "string",
+              "value": "[parameters('apicServiceName')]"
+            },
+            "apiEnvironmentName": {
+              "type": "string",
+              "value": "api"
+            },
+            "mcpEnvironmentName": {
+              "type": "string",
+              "value": "mcp"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "weatherAPIModule",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "apimServiceName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apimModule'), '2025-04-01').outputs.name.value]"
+          },
+          "apicServiceName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apicModule'), '2025-04-01').outputs.name.value]"
+          },
+          "environmentName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apicModule'), '2025-04-01').outputs.apiEnvironmentName.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "14634990755268492524"
+            }
+          },
+          "parameters": {
+            "apimServiceName": {
+              "type": "string"
+            },
+            "apicServiceName": {
+              "type": "string"
+            },
+            "apiPath": {
+              "type": "string",
+              "defaultValue": "weather"
+            },
+            "apiName": {
+              "type": "string",
+              "defaultValue": "weather-api"
+            },
+            "apiDisplayName": {
+              "type": "string",
+              "defaultValue": "Weather API"
+            },
+            "apiDescription": {
+              "type": "string",
+              "defaultValue": "API for weather data"
+            },
+            "environmentName": {
+              "type": "string"
+            },
+            "apiLifecycleStage": {
+              "type": "string",
+              "defaultValue": "development"
+            },
+            "apiContactName": {
+              "type": "string",
+              "defaultValue": "Alex"
+            },
+            "apiContactEmail": {
+              "type": "string",
+              "defaultValue": "alex@example.com"
+            },
+            "apiContactUrl": {
+              "type": "string",
+              "defaultValue": "[format('https://example.com/docs/{0}', parameters('apiPath'))]"
+            },
+            "apiVersionName": {
+              "type": "string",
+              "defaultValue": "1-0-0"
+            },
+            "apiVersionDisplayName": {
+              "type": "string",
+              "defaultValue": "1.0.0"
+            },
+            "apiDefinitionName": {
+              "type": "string",
+              "defaultValue": "[format('{0}-definition', parameters('apiName'))]"
+            },
+            "apiDefinitionDisplayName": {
+              "type": "string",
+              "defaultValue": "[format('{0} Definition', parameters('apiDisplayName'))]"
+            },
+            "apiDefinitionDescription": {
+              "type": "string",
+              "defaultValue": "[format('{0} Definition for version {1}', parameters('apiDisplayName'), parameters('apiVersionName'))]"
+            },
+            "apiDeploymentName": {
+              "type": "string",
+              "defaultValue": "[format('{0}-deployment', parameters('apiName'))]"
+            },
+            "apiDeploymentDisplayName": {
+              "type": "string",
+              "defaultValue": "[format('{0} Deployment', parameters('apiDisplayName'))]"
+            },
+            "apiDeploymentDescription": {
+              "type": "string",
+              "defaultValue": "[format('{0} Deployment for version {1} and environment {2}', parameters('apiDisplayName'), parameters('apiVersionName'), parameters('environmentName'))]"
+            }
+          },
+          "variables": {
+            "$fxv#0": "{\r\n    \"openapi\": \"3.0.1\",\r\n    \"info\": {\r\n        \"title\": \"City Weather API\",\r\n        \"description\": \"API to retrieve weather information, including the current temperature, for a specified city. Generated with GitHub Copilot and the following prompt - create an openapi file that retrieves weather information with the city query parameter and reply with temperature. Add examples to the specification.\",\r\n        \"version\": \"1.0\"\r\n    },\r\n    \"servers\": [{\r\n        \"url\": \"https://replace-me.local/weatherservice\"\r\n    }],\r\n    \"paths\": {\r\n        \"/weather\": {\r\n            \"get\": {\r\n                \"summary\": \"Get current weather information for a specified city\",\r\n                \"description\": \"Retrieves weather information, including the current temperature, for a specified city.\",\r\n                \"operationId\": \"get-weather\",\r\n                \"parameters\": [{\r\n                    \"name\": \"city\",\r\n                    \"in\": \"query\",\r\n                    \"description\": \"Name of the city to retrieve weather information for\",\r\n                    \"required\": true,\r\n                    \"schema\": {\r\n                        \"type\": \"string\",\r\n                        \"example\": \"Tokyo\"\r\n                    }\r\n                }],\r\n                \"responses\": {\r\n                    \"200\": {\r\n                        \"description\": \"Weather information for the specified city\",\r\n                        \"content\": {\r\n                            \"application/json\": {\r\n                                \"schema\": {\r\n                                    \"$ref\": \"#/components/schemas/CityWeather\"\r\n                                },\r\n                                \"examples\": {\r\n                                    \"Tokyo\": {\r\n                                        \"summary\": \"Example response for Tokyo\",\r\n                                        \"value\": {\r\n                                            \"city\": \"Tokyo\",\r\n                                            \"temperature\": 15.5,\r\n                                            \"temperature_format\": \"Celsius\",\r\n                                            \"description\": \"Clear sky\",\r\n                                            \"humidity\": 60,\r\n                                            \"wind_speed\": 5.5\r\n                                        }\r\n                                    },\r\n                                    \"default\": {\r\n                                        \"value\": {\r\n                                            \"city\": \"New York City\",\r\n                                            \"temperature\": 59,\r\n                                            \"temperature_format\": \"Fahrenheit\",\r\n                                            \"description\": \"Partly cloudy\",\r\n                                            \"humidity\": 70,\r\n                                            \"wind_speed\": 3.2\r\n                                        }\r\n                                    }\r\n                                }\r\n                            }\r\n                        }\r\n                    },\r\n                    \"400\": {\r\n                        \"description\": \"Bad request\"\r\n                    },\r\n                    \"404\": {\r\n                        \"description\": \"City not found\"\r\n                    },\r\n                    \"500\": {\r\n                        \"description\": \"Internal server error\"\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"components\": {\r\n        \"schemas\": {\r\n            \"CityWeather\": {\r\n                \"type\": \"object\",\r\n                \"properties\": {\r\n                    \"city\": {\r\n                        \"type\": \"string\",\r\n                        \"example\": \"Tokyo\"\r\n                    },\r\n                    \"temperature\": {\r\n                        \"type\": \"number\",\r\n                        \"format\": \"float\",\r\n                        \"example\": 15.5\r\n                    },\r\n                    \"temperature_format\": {\r\n                        \"type\": \"string\",\r\n                        \"example\": \"Celsius\"\r\n                    },\r\n                    \"description\": {\r\n                        \"type\": \"string\",\r\n                        \"example\": \"Clear sky\"\r\n                    },\r\n                    \"humidity\": {\r\n                        \"type\": \"number\",\r\n                        \"format\": \"int32\",\r\n                        \"example\": 60\r\n                    },\r\n                    \"wind_speed\": {\r\n                        \"type\": \"number\",\r\n                        \"format\": \"float\",\r\n                        \"example\": 5.5\r\n                    }\r\n                }\r\n            }\r\n        },\r\n        \"securitySchemes\": {\r\n            \"apiKeyHeader\": {\r\n                \"type\": \"apiKey\",\r\n                \"name\": \"api-key\",\r\n                \"in\": \"header\"\r\n            }\r\n        }\r\n    },\r\n    \"security\": [{\r\n        \"apiKeyHeader\": []\r\n    }]\r\n}\r\n",
+            "$fxv#1": "<policies>\r\n    <inbound>\r\n        <base />\r\n        <return-response>\r\n            <set-status code=\"200\" />\r\n            <set-body>@{\r\n                    var random = new Random();\r\n                    double temperature;\r\n                    var format = \"Celsius\";\r\n                    var descriptions = new[] { \"Clear skies\", \"Partly cloudy\", \"Overcast\", \"Rainy\" };\r\n                    var city = context.Request.MatchedParameters[\"city\"];\r\n                    switch (city.ToLower())\r\n                    {\r\n                        case \"seattle\":\r\n                        case \"new york city\":\r\n                        case \"los angeles\":\r\n                            format = \"Fahrenheit\";\r\n                            temperature = random.Next(14, 95) + random.NextDouble();\r\n                            break;\r\n                        default:\r\n                            temperature = random.Next(-5, 35) + random.NextDouble();\r\n                            break;\r\n                    }\r\n                    return new JObject(\r\n                        new JProperty(\"city\", city),\r\n                        new JProperty(\"temperature\", Math.Round(temperature, 1)),\r\n                        new JProperty(\"temperature_format\", format),\r\n                        new JProperty(\"description\", descriptions[random.Next(descriptions.Length)]),\r\n                        new JProperty(\"humidity\", random.Next(20, 100)),\r\n                        new JProperty(\"wind_speed\", Math.Round(random.NextDouble() * 10, 1))\r\n                        ).ToString();\r\n                    }</set-body>\r\n        </return-response>\r\n    </inbound>\r\n    <backend>\r\n        <base />\r\n    </backend>\r\n    <outbound>\r\n        <base />\r\n    </outbound>\r\n    <on-error>\r\n        <base />\r\n    </on-error>\r\n</policies>\r\n"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ApiManagement/service/apis",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}', parameters('apimServiceName'), parameters('apiName'))]",
+              "properties": {
+                "apiType": "http",
+                "displayName": "[parameters('apiDisplayName')]",
+                "description": "[parameters('apiDescription')]",
+                "apiRevision": "1",
+                "subscriptionRequired": false,
+                "path": "[parameters('apiPath')]",
+                "contact": {
+                  "email": "[parameters('apiContactEmail')]",
+                  "name": "[parameters('apiContactName')]",
+                  "url": "[parameters('apiContactUrl')]"
+                },
+                "protocols": [
+                  "https"
+                ],
+                "authenticationSettings": {
+                  "oAuth2AuthenticationSettings": [],
+                  "openidAuthenticationSettings": []
+                },
+                "subscriptionKeyParameterNames": {
+                  "header": "api-key",
+                  "query": "subscription-key"
+                },
+                "isCurrent": true,
+                "format": "openapi+json",
+                "value": "[variables('$fxv#0')]"
+              }
+            },
+            {
+              "type": "Microsoft.ApiManagement/service/apis/policies",
+              "apiVersion": "2021-12-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('apimServiceName'), parameters('apiName'), 'policy')]",
+              "properties": {
+                "value": "[variables('$fxv#1')]",
+                "format": "rawxml"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', parameters('apimServiceName'), parameters('apiName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('apicServiceName'), 'default', parameters('apiName'))]",
+              "properties": {
+                "title": "[parameters('apiDisplayName')]",
+                "kind": "rest",
+                "lifecycleState": "[parameters('apiLifecycleStage')]",
+                "externalDocumentation": [
+                  {
+                    "description": "[parameters('apiDescription')]",
+                    "title": "[parameters('apiDisplayName')]",
+                    "url": "[parameters('apiContactUrl')]"
+                  }
+                ],
+                "contacts": [
+                  {
+                    "name": "[parameters('apiContactName')]",
+                    "email": "[parameters('apiContactEmail')]",
+                    "url": "[parameters('apiContactUrl')]"
+                  }
+                ],
+                "customProperties": {},
+                "summary": "[parameters('apiDescription')]",
+                "description": "[parameters('apiDescription')]"
+              }
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/versions",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}', parameters('apicServiceName'), 'default', parameters('apiName'), parameters('apiVersionName'))]",
+              "properties": {
+                "title": "[parameters('apiVersionDisplayName')]",
+                "lifecycleStage": "[parameters('apiLifecycleStage')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis', parameters('apicServiceName'), 'default', parameters('apiName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/versions/definitions",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}/{4}', parameters('apicServiceName'), 'default', parameters('apiName'), parameters('apiVersionName'), parameters('apiDefinitionName'))]",
+              "properties": {
+                "description": "[parameters('apiDefinitionDescription')]",
+                "title": "[parameters('apiDefinitionDisplayName')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions', parameters('apicServiceName'), 'default', parameters('apiName'), parameters('apiVersionName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/deployments",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}', parameters('apicServiceName'), 'default', parameters('apiName'), parameters('apiDeploymentName'))]",
+              "properties": {
+                "description": "[parameters('apiDeploymentDescription')]",
+                "title": "[parameters('apiDeploymentDisplayName')]",
+                "environmentId": "[format('/workspaces/default/environments/{0}', parameters('environmentName'))]",
+                "definitionId": "[format('/workspaces/{0}/apis/{1}/versions/{2}/definitions/{3}', 'default', parameters('apiName'), parameters('apiVersionName'), parameters('apiDefinitionName'))]",
+                "state": "active",
+                "server": {
+                  "runtimeUri": [
+                    "[format('{0}/{1}', reference(resourceId('Microsoft.ApiManagement/service', parameters('apimServiceName')), '2024-06-01-preview').gatewayUrl, parameters('apiPath'))]"
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis', parameters('apicServiceName'), 'default', parameters('apiName'))]",
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions/definitions', parameters('apicServiceName'), 'default', parameters('apiName'), parameters('apiVersionName'), parameters('apiDefinitionName'))]",
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions', parameters('apicServiceName'), 'default', parameters('apiName'), parameters('apiVersionName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[parameters('apiName')]"
+            },
+            "endpoint": {
+              "type": "string",
+              "value": "[format('{0}/{1}', reference(resourceId('Microsoft.ApiManagement/service', parameters('apimServiceName')), '2024-06-01-preview').gatewayUrl, parameters('apiPath'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'apicModule')]",
+        "[resourceId('Microsoft.Resources/deployments', 'apimModule')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2025-04-01",
+      "name": "weatherMCPModule",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "apimServiceName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apimModule'), '2025-04-01').outputs.name.value]"
+          },
+          "apicServiceName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apicModule'), '2025-04-01').outputs.name.value]"
+          },
+          "environmentName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apicModule'), '2025-04-01').outputs.mcpEnvironmentName.value]"
+          },
+          "apiName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'weatherAPIModule'), '2025-04-01').outputs.name.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.43.8.12551",
+              "templateHash": "10055879680325281886"
+            }
+          },
+          "parameters": {
+            "apimServiceName": {
+              "type": "string"
+            },
+            "apicServiceName": {
+              "type": "string"
+            },
+            "apiName": {
+              "type": "string",
+              "defaultValue": "weather-api"
+            },
+            "operationName": {
+              "type": "string",
+              "defaultValue": "get-weather"
+            },
+            "mcpPath": {
+              "type": "string",
+              "defaultValue": "weather-mcp"
+            },
+            "mcpName": {
+              "type": "string",
+              "defaultValue": "weather-mcp"
+            },
+            "mcpDisplayName": {
+              "type": "string",
+              "defaultValue": "Weather MCP"
+            },
+            "mcpDescription": {
+              "type": "string",
+              "defaultValue": "MCP for weather data"
+            },
+            "environmentName": {
+              "type": "string"
+            },
+            "mcpLifecycleStage": {
+              "type": "string",
+              "defaultValue": "development"
+            },
+            "mcpVersionName": {
+              "type": "string",
+              "defaultValue": "1-0-0"
+            },
+            "mcpVersionDisplayName": {
+              "type": "string",
+              "defaultValue": "1.0.0"
+            },
+            "mcpDefinitionName": {
+              "type": "string",
+              "defaultValue": "[format('{0}-definition', parameters('mcpName'))]"
+            },
+            "mcpDefinitionDisplayName": {
+              "type": "string",
+              "defaultValue": "[format('{0} Definition', parameters('mcpDisplayName'))]"
+            },
+            "mcpDefinitionDescription": {
+              "type": "string",
+              "defaultValue": "[format('{0} Definition for version {1}', parameters('mcpDisplayName'), parameters('mcpVersionName'))]"
+            },
+            "mcpDeploymentName": {
+              "type": "string",
+              "defaultValue": "[format('{0}-deployment', parameters('mcpName'))]"
+            },
+            "mcpDeploymentDisplayName": {
+              "type": "string",
+              "defaultValue": "[format('{0} Deployment', parameters('mcpDisplayName'))]"
+            },
+            "mcpDeploymentDescription": {
+              "type": "string",
+              "defaultValue": "[format('{0} Deployment for version {1} and environment {2}', parameters('mcpDisplayName'), parameters('mcpVersionName'), parameters('environmentName'))]"
+            }
+          },
+          "variables": {
+            "$fxv#0": "<policies>\r\n\t<inbound>\r\n\t\t<base />\r\n\t\t<trace source=\"Weather MCP\" severity=\"information\">\r\n\t\t\t<message>Weather MCP trace info</message>\r\n\t\t\t<metadata name=\"agent-id\" value=\"@(context.Request.Headers.GetValueOrDefault(\"agent-id\", \"n/a\"))\" />\r\n\t\t</trace>\r\n\t</inbound>\r\n\t<backend>\r\n\t\t<base />\r\n\t</backend>\r\n\t<outbound>\r\n\t\t<base />\r\n\t</outbound>\r\n\t<on-error>\r\n\t\t<base />\r\n\t</on-error>\r\n</policies>\r\n"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ApiManagement/service/apis",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}', parameters('apimServiceName'), parameters('mcpName'))]",
+              "properties": {
+                "type": "mcp",
+                "displayName": "[parameters('mcpDisplayName')]",
+                "description": "[parameters('mcpDescription')]",
+                "subscriptionRequired": false,
+                "path": "[parameters('mcpPath')]",
+                "protocols": [
+                  "https"
+                ],
+                "mcpTools": [
+                  {
+                    "name": "[parameters('operationName')]",
+                    "operationId": "[resourceId('Microsoft.ApiManagement/service/apis/operations', parameters('apimServiceName'), parameters('apiName'), parameters('operationName'))]",
+                    "description": "[reference(resourceId('Microsoft.ApiManagement/service/apis/operations', parameters('apimServiceName'), parameters('apiName'), parameters('operationName')), '2024-06-01-preview').description]"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.ApiManagement/service/apis/diagnostics",
+              "apiVersion": "2022-08-01",
+              "name": "[format('{0}/{1}/{2}', parameters('apimServiceName'), parameters('mcpName'), 'applicationinsights')]",
+              "properties": {
+                "alwaysLog": "allErrors",
+                "httpCorrelationProtocol": "W3C",
+                "logClientIp": true,
+                "loggerId": "[resourceId(resourceGroup().name, 'Microsoft.ApiManagement/service/loggers', parameters('apimServiceName'), 'appinsights-logger')]",
+                "metrics": true,
+                "verbosity": "verbose",
+                "sampling": {
+                  "samplingType": "fixed",
+                  "percentage": 100
+                },
+                "frontend": {},
+                "backend": {}
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', parameters('apimServiceName'), parameters('mcpName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiManagement/service/apis/policies",
+              "apiVersion": "2021-12-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('apimServiceName'), parameters('mcpName'), 'policy')]",
+              "properties": {
+                "value": "[variables('$fxv#0')]",
+                "format": "rawxml"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/apis', parameters('apimServiceName'), parameters('mcpName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('apicServiceName'), 'default', parameters('mcpName'))]",
+              "properties": {
+                "title": "[parameters('mcpDisplayName')]",
+                "kind": "mcp",
+                "lifecycleState": "[parameters('mcpLifecycleStage')]",
+                "externalDocumentation": [
+                  {
+                    "description": "[parameters('mcpDescription')]",
+                    "title": "[parameters('mcpDisplayName')]",
+                    "url": "https://example.com/mcp-docs"
+                  }
+                ],
+                "contacts": [],
+                "customProperties": {},
+                "summary": "[parameters('mcpDescription')]",
+                "description": "[parameters('mcpDescription')]"
+              }
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/versions",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}', parameters('apicServiceName'), 'default', parameters('mcpName'), parameters('mcpVersionName'))]",
+              "properties": {
+                "title": "[parameters('mcpVersionDisplayName')]",
+                "lifecycleStage": "[parameters('mcpLifecycleStage')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis', parameters('apicServiceName'), 'default', parameters('mcpName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/versions/definitions",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}/{4}', parameters('apicServiceName'), 'default', parameters('mcpName'), parameters('mcpVersionName'), parameters('mcpDefinitionName'))]",
+              "properties": {
+                "description": "[parameters('mcpDefinitionDescription')]",
+                "title": "[parameters('mcpDefinitionDisplayName')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions', parameters('apicServiceName'), 'default', parameters('mcpName'), parameters('mcpVersionName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiCenter/services/workspaces/apis/deployments",
+              "apiVersion": "2024-06-01-preview",
+              "name": "[format('{0}/{1}/{2}/{3}', parameters('apicServiceName'), 'default', parameters('mcpName'), parameters('mcpDeploymentName'))]",
+              "properties": {
+                "description": "[parameters('mcpDeploymentDescription')]",
+                "title": "[parameters('mcpDeploymentDisplayName')]",
+                "environmentId": "[format('/workspaces/default/environments/{0}', parameters('environmentName'))]",
+                "definitionId": "[format('/workspaces/{0}/apis/{1}/versions/{2}/definitions/{3}', 'default', parameters('mcpName'), parameters('mcpVersionName'), parameters('mcpDefinitionName'))]",
+                "state": "active",
+                "server": {
+                  "runtimeUri": [
+                    "[format('{0}/{1}', reference(resourceId('Microsoft.ApiManagement/service', parameters('apimServiceName')), '2024-06-01-preview').gatewayUrl, parameters('mcpPath'))]"
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis', parameters('apicServiceName'), 'default', parameters('mcpName'))]",
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions/definitions', parameters('apicServiceName'), 'default', parameters('mcpName'), parameters('mcpVersionName'), parameters('mcpDefinitionName'))]",
+                "[resourceId('Microsoft.ApiCenter/services/workspaces/apis/versions', parameters('apicServiceName'), 'default', parameters('mcpName'), parameters('mcpVersionName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "name": {
+              "type": "string",
+              "value": "[parameters('mcpName')]"
+            },
+            "endpoint": {
+              "type": "string",
+              "value": "[format('{0}/{1}/mcp', reference(resourceId('Microsoft.ApiManagement/service', parameters('apimServiceName')), '2024-06-01-preview').gatewayUrl, parameters('mcpPath'))]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'apicModule')]",
+        "[resourceId('Microsoft.Resources/deployments', 'apimModule')]",
+        "[resourceId('Microsoft.Resources/deployments', 'weatherAPIModule')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "logAnalyticsWorkspaceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'lawModule'), '2025-04-01').outputs.customerId.value]"
+    },
+    "apimServiceId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apimModule'), '2025-04-01').outputs.id.value]"
+    },
+    "apimResourceGatewayURL": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apimModule'), '2025-04-01').outputs.gatewayUrl.value]"
+    },
+    "apimSubscriptions": {
+      "type": "array",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'apimModule'), '2025-04-01').outputs.apimSubscriptions.value]"
+    },
+    "weatherApiEndpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'weatherAPIModule'), '2025-04-01').outputs.endpoint.value]"
+    },
+    "weatherMcpEndpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'weatherMCPModule'), '2025-04-01').outputs.endpoint.value]"
+    }
+  }
+}
