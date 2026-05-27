@@ -878,6 +878,25 @@
     "lastCommitDate": "2026-02-04T13:09:52.739Z"
   },
   {
+    "id": "simplified-api-mcp",
+    "name": "Simplified API to MCP",
+    "architectureDiagram": "images/model-context-protocol.gif",
+    "categories": [
+      "Knowledge & Tools"
+    ],
+    "services": [
+      "MCP"
+    ],
+    "shortDescription": "Expose a single mocked Weather REST API as an MCP server with Azure API Management.",
+    "detailedDescription": "Focused lab that shows the minimum setup to expose one mocked Weather REST API through the Model Context Protocol with Azure API Management and API Center.",
+    "authors": [
+      "vieiraae"
+    ],
+    "tags": [],
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/simplified-api-mcp",
+    "lastCommitDate": "2026-05-27T08:02:16.464Z"
+  },
+  {
     "id": "slm-self-hosting",
     "name": "SLM Self Hosting",
     "architectureDiagram": "images/slm-self-hosting.gif",
