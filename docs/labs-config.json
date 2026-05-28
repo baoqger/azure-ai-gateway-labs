@@ -897,6 +897,28 @@
     "lastCommitDate": "2026-05-27T08:16:07.346Z"
   },
   {
+    "id": "simplified-ml-models",
+    "name": "Simplified ML Models to MCP",
+    "architectureDiagram": "",
+    "categories": [
+      "AI Agents & MCP",
+      "Model Integration"
+    ],
+    "services": [
+      "Azure API Management",
+      "Azure Machine Learning",
+      "Azure Monitor"
+    ],
+    "shortDescription": "Expose an Azure ML online endpoint as an MCP server via Azure API Management.",
+    "detailedDescription": "Focused lab that keeps only the Azure ML deployment, the APIM REST façade, and the MCP server needed to expose one forecasting model as an MCP tool.",
+    "authors": [
+      "jonesethan"
+    ],
+    "tags": [],
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/simplified-ml-models",
+    "lastCommitDate": "2026-05-28T02:00:40.711Z"
+  },
+  {
     "id": "slm-self-hosting",
     "name": "SLM Self Hosting",
     "architectureDiagram": "images/slm-self-hosting.gif",
