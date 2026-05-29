@@ -59,9 +59,9 @@
     "authors": [
       "vieiraae"
     ],
-    "githubPath": "https://github.com/Azure-Samples/AI-Gateway/tree/main/labs/ai-foundry-deepseek",
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/ai-foundry-deepseek",
     "tags": [],
-    "lastCommitDate": "2026-02-04T13:09:52.727Z"
+    "lastCommitDate": "2026-05-29T06:24:23.466Z"
   },
   {
     "id": "ai-foundry-hosted-agents",
