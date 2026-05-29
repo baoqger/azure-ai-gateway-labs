@@ -894,7 +894,7 @@
     ],
     "tags": [],
     "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/simplified-api-mcp",
-    "lastCommitDate": "2026-05-27T08:16:07.346Z"
+    "lastCommitDate": "2026-05-28T05:53:40.890Z"
   },
   {
     "id": "simplified-ml-models",
@@ -916,7 +916,7 @@
     ],
     "tags": [],
     "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/simplified-ml-models",
-    "lastCommitDate": "2026-05-28T02:00:40.711Z"
+    "lastCommitDate": "2026-05-28T05:53:40.891Z"
   },
   {
     "id": "slm-self-hosting",
