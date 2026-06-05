@@ -831,9 +831,9 @@
     "authors": [
       "vieiraae"
     ],
-    "githubPath": "https://github.com/Azure-Samples/AI-Gateway/tree/main/labs/semantic-caching",
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/semantic-caching",
     "tags": [],
-    "lastCommitDate": "2026-02-04T13:09:52.739Z"
+    "lastCommitDate": "2026-06-04T08:57:07.158Z"
   },
   {
     "id": "serverless-gpu",
