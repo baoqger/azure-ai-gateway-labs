@@ -67,8 +67,8 @@ resource apim 'Microsoft.ApiManagement/service@2024-06-01-preview' existing = {
   name: 'apim-${resourceSuffix}'
 }
 
-/*
-// the following blocklist items fail to deploy with error: [{"code":"IfMatchPreconditionFailed","message":"The specified precondition 'If-Match = \"\"d00087d4-0000-0200-0000-687798f10000\"\"' failed."},{"code":"IfMatchPreconditionFailed","message":"The specified precondition 'If-Match = \"\"d00087d4-0000-0200-0000-687798f10000\"\"' failed."}]}}
+
+// Create blocklist items sequentially because the service updates the blocklist ETag on each item write.
 resource raiBlocklistItemName 'Microsoft.CognitiveServices/accounts/raiBlocklists/raiBlocklistItems@2025-06-01' = {
   parent: raiBlocklist
   name: 'name'
@@ -81,6 +81,9 @@ resource raiBlocklistItemName 'Microsoft.CognitiveServices/accounts/raiBlocklist
 resource raiBlocklistItemSSN 'Microsoft.CognitiveServices/accounts/raiBlocklists/raiBlocklistItems@2025-06-01' = {
   parent: raiBlocklist
   name: 'ssn'
+  dependsOn: [
+    raiBlocklistItemName
+  ]
   properties: {
     isRegex: true
     pattern: '^\\d{3}-?\\d{2}-?\\d{4}$'
@@ -90,12 +93,14 @@ resource raiBlocklistItemSSN 'Microsoft.CognitiveServices/accounts/raiBlocklists
 resource raiBlocklistItemCreditCard 'Microsoft.CognitiveServices/accounts/raiBlocklists/raiBlocklistItems@2025-06-01' = {
   parent: raiBlocklist
   name: 'creditcard'
+  dependsOn: [
+    raiBlocklistItemSSN
+  ]
   properties: {
     isRegex: true
     pattern: '^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})$'
   }
 }
-*/
 
 var cognitiveServicesReaderDefinitionID = resourceId('Microsoft.Authorization/roleDefinitions', 'a97b65f3-24c7-4388-baec-2e87135dc908')
 resource contentSafetyRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
