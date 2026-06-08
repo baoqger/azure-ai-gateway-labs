@@ -276,9 +276,9 @@
     "authors": [
       "vieiraae"
     ],
-    "githubPath": "https://github.com/Azure-Samples/AI-Gateway/tree/main/labs/content-safety",
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/content-safety",
     "tags": [],
-    "lastCommitDate": "2026-04-22T21:03:32.956Z"
+    "lastCommitDate": "2026-06-08T00:56:16.508Z"
   },
   {
     "id": "finops-framework",
