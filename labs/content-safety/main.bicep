@@ -86,7 +86,7 @@ resource raiBlocklistItemSSN 'Microsoft.CognitiveServices/accounts/raiBlocklists
   ]
   properties: {
     isRegex: true
-    pattern: '^\\d{3}-?\\d{2}-?\\d{4}$'
+    pattern: '\\b\\d{3}-?\\d{2}-?\\d{4}\\b'
   }
 }
 
@@ -98,7 +98,7 @@ resource raiBlocklistItemCreditCard 'Microsoft.CognitiveServices/accounts/raiBlo
   ]
   properties: {
     isRegex: true
-    pattern: '^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11})$'
+    pattern: '\\b(?:4\\d{3}(?:[ -]?\\d{4}){3}|5[1-5]\\d{2}(?:[ -]?\\d{4}){3}|3[47]\\d{2}[ -]?\\d{6}[ -]?\\d{5}|6(?:011|5\\d{2})(?:[ -]?\\d{4}){3})\\b'
   }
 }
 
