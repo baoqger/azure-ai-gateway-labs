@@ -17,9 +17,9 @@
       "vieiraae",
       "nourshaker-msft"
     ],
-    "githubPath": "https://github.com/Azure-Samples/AI-Gateway/tree/main/labs/access-controlling",
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/access-controlling",
     "tags": [],
-    "lastCommitDate": "2026-02-04T13:09:52.726Z"
+    "lastCommitDate": "2026-06-23T04:13:42.193Z"
   },
   {
     "id": "ai-agent-service",
