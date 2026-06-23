@@ -10,6 +10,7 @@ param apimSubscriptionsConfig array = []
 param inferenceAPIType string = 'AzureOpenAI'
 param inferenceAPIPath string = 'inference' // Path to the inference API in the APIM service
 param foundryProjectName string = 'default'
+param enableBingGrounding bool = true
 
 
 param weatherAPIPath string = 'weatherservice'
@@ -198,7 +199,7 @@ resource placeOrderWorkflow 'Microsoft.Logic/workflows@2019-05-01' = {
 }
 
 
-resource bingSearch 'Microsoft.Bing/accounts@2020-06-10' = {
+resource bingSearch 'Microsoft.Bing/accounts@2020-06-10' = if (enableBingGrounding) {
   name: 'bingsearch-${resourceSuffix}'
   location: 'global'
   sku: {
@@ -211,7 +212,7 @@ resource bingSearch 'Microsoft.Bing/accounts@2020-06-10' = {
 }
 
 // Creates the Azure Foundry connection to your Azure App Insights resource
-resource bingSearchConnection 'Microsoft.CognitiveServices/accounts/connections@2025-04-01-preview' = {
+resource bingSearchConnection 'Microsoft.CognitiveServices/accounts/connections@2025-04-01-preview' = if (enableBingGrounding) {
   name: 'bingSearch-connection'
   parent: aiFoundry
   properties: {
@@ -220,7 +221,7 @@ resource bingSearchConnection 'Microsoft.CognitiveServices/accounts/connections@
     authType: 'ApiKey'
     isSharedToAll: true
     credentials: {
-      key: bingSearch.listKeys().key1
+      key: bingSearch!.listKeys().key1
     }
     metadata: {
       ApiType: 'Azure'
@@ -492,7 +493,7 @@ output apimSubscriptions array = apimModule.outputs.apimSubscriptions
 
 output foundryProjectEndpoint string = foundryModule.outputs.extendedAIServicesConfig[0].foundryProjectEndpoint
 
-output bingSearchConnectionId string = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.CognitiveServices/accounts/${foundryModule.outputs.extendedAIServicesConfig[0].cognitiveServiceName}/projects/${foundryProjectName}/connections/${bingSearchConnection.name}'
+output bingSearchConnectionId string = enableBingGrounding ? '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.CognitiveServices/accounts/${foundryModule.outputs.extendedAIServicesConfig[0].cognitiveServiceName}/projects/${foundryProjectName}/connections/${bingSearchConnection.name}' : ''
 
 output weatherAPIConnectionId string = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.CognitiveServices/accounts/${foundryModule.outputs.extendedAIServicesConfig[0].cognitiveServiceName}/projects/${foundryProjectName}/connections/${weatherAPIConnection.name}'
 
