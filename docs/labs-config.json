@@ -19,7 +19,7 @@
     ],
     "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/access-controlling",
     "tags": [],
-    "lastCommitDate": "2026-06-23T04:13:42.193Z"
+    "lastCommitDate": "2026-08-16T05:47:17.355Z"
   },
   {
     "id": "ai-agent-service",
@@ -61,7 +61,7 @@
     ],
     "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/ai-foundry-deepseek",
     "tags": [],
-    "lastCommitDate": "2026-06-01T08:37:34.158Z"
+    "lastCommitDate": "2026-08-16T05:47:17.356Z"
   },
   {
     "id": "ai-foundry-hosted-agents",
@@ -278,7 +278,7 @@
     ],
     "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/content-safety",
     "tags": [],
-    "lastCommitDate": "2026-08-15T22:11:00.404Z"
+    "lastCommitDate": "2026-08-16T05:47:17.357Z"
   },
   {
     "id": "finops-framework",
