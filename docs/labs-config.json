@@ -575,9 +575,9 @@
     "authors": [
       "nourshaker-msft"
     ],
-    "githubPath": "https://github.com/Azure-Samples/AI-Gateway/tree/main/labs/mcp-prm-oauth",
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/mcp-prm-oauth",
     "tags": [],
-    "lastCommitDate": "2026-02-23T15:05:59.377Z"
+    "lastCommitDate": "2026-11-19T02:35:21.370Z"
   },
   {
     "id": "mcp-registry-apic",
@@ -682,9 +682,9 @@
       "simonkurtz-MSFT",
       "nourshaker-msft"
     ],
-    "githubPath": "https://github.com/Azure-Samples/AI-Gateway/tree/main/labs/model-routing",
+    "githubPath": "https://github.com/baoqger/azure-ai-gateway-labs/tree/main/labs/model-routing",
     "tags": [],
-    "lastCommitDate": "2026-02-04T13:09:52.736Z"
+    "lastCommitDate": "2026-11-19T02:35:21.371Z"
   },
   {
     "id": "openai-agents",
