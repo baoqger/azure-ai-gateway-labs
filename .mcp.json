@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"test-prm": {
+			"url": "https://aca-mcp-uvvry7c6yk6jc.whitestone-58955969.uksouth.azurecontainerapps.io/mcp",
+			"type": "http"
+		}
+	}
+}

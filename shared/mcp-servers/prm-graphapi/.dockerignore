@@ -1,0 +1,17 @@
+# Local venvs (must not be uploaded to ACR — long paths break Windows tar packing)
+.venv
+venv
+env
+ENV
+.test-venv
+
+# Python artifacts
+__pycache__
+*.py[cod]
+*.egg-info
+
+# Secrets and IDE
+.env
+.env.*
+.vscode
+.idea
